@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Editable Table</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: cadetblue;
+        }
+        td input {
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .button {
+            background-color: red;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .button.green {
+            background-color: green;
+        }
+        .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        /* Style for the dropdown container */
+        .dropdown {
+          position: relative;
+          display: inline-block;
+        }
+
+        /* Style for the dropdown button */
+        .dropdown select {
+          appearance: none;
+          -webkit-appearance: none;
+          -moz-appearance: none;
+          padding: 8px 30px 8px 10px;
+          font-size: 16px;
+          border: 1px solid steelblue;
+          border-radius: 4px;
+          background-color: lightblue;
+          color: #333;
+          cursor: pointer;
+        }
+
+        /* Style for the dropdown arrow */
+        .dropdown::after {
+          content: '\25BC'; /* Unicode character for down arrow */
+          position: absolute;
+          top: 50%;
+          right: 10px;
+          transform: translateY(-50%);
+          pointer-events: none;
+        }
+
+        /* Style for dropdown options */
+        .dropdown select option {
+          background-color: #fff;
+          color: #333;
+        }
+
+        /* Hover effect for dropdown */
+        .dropdown:hover select {
+          border-color: #aaa;
+        }
+
+        /* Focus effect for dropdown */
+        .dropdown select:focus {
+          outline: none;
+          border-color: #007bff;
+        }
+
+        /* Style for the blue row */
+        .blue-row th {
+            background-color: blue;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" style="border: 1px solid slategrey; padding: 10px; margin-bottom: 10px;">
+        <a href="f2-4-2.html">Slots</a>
+        <div class="dropdown">
+            <select id="department-division" onchange="showStudents(this)">
+                <option value="">Select Department and Division</option>
+                <optgroup label="IT">
+                    <option value="IT-A">IT - A</option>
+                    <option value="IT-B">IT - B</option>
+                </optgroup>
+                <optgroup label="CMPN">
+                    <option value="CMPN-A">CMPN - A</option>
+                    <option value="CMPN-B">CMPN - B</option>
+                </optgroup>
+                <optgroup label="EXCS">
+                    <option value="EXCS-A">EXCS - A</option>
+                    <option value="EXCS-B">EXCS - B</option>
+                </optgroup>
+            </select>
+        </div>
+      
+        <div class="dropdown">
+            <select id="selector" onchange="sortBy(this)">
+                <option value="" selected disabled hidden>Sort By</option>
+                <option value="Department">Department</option>
+                <option value="Division">Division</option>
+                <option value="Number">Number</option>
+                <option value="Alphabetical">Alphabetical</option>
+            </select>
+        </div>
+        <button class="button" onclick="addColumn()">Add Column</button>
+<button class="button" onclick="deleteColumn()">Delete Column</button>
+<button class="button" onclick="generateReport()">Report</button>
+        <button class="button" onclick="saveData()">Save</button>
+    </div>
+    <table id="dataTable">
+        <thead>
+            <tr>
+                <th id="roll-number-header">Roll Number</th>
+                <th id="student-name-header">Student Name</th>
+              <th id="total-attendance">Total Attendnce</th>
+                <!-- Add new column headers here -->
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Rows will be dynamically populated based on the selected department and division -->
+            <tr>
+                <td contenteditable="true">1</td>
+                <td contenteditable="true"></td>
+                
+                <!-- Add new columns here -->
+            </tr>
+        </tbody>
+    </table>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        function sortBy(select) {
+            alert("Sorting by: " + select.value);
+            let table = document.getElementById("dataTable");
+            let rows = Array.from(table.rows).slice(1); // Exclude header row
+            let sortedRows;
+
+            switch (select.value) {
+                case "Department":
+                    sortedRows = rows.sort((a, b) => {
+                        let departmentOrder = { '1': 1, '2': 2, '4': 3 }; // IT: 1, CMPN: 2, EXCS: 3
+                        let departmentA = a.cells[0].textContent.substr(4, 1);
+                        let departmentB = b.cells[0].textContent.substr(4, 1);
+                        return departmentOrder[departmentA] - departmentOrder[departmentB];
+                    });
+                    break;
+                case "Division":
+                    sortedRows = rows.sort((a, b) => {
+                        let divisionA = a.cells[0].textContent.substr(5, 1);
+                        let divisionB = b.cells[0].textContent.substr(5, 1);
+                        return divisionA.localeCompare(divisionB);
+                    });
+                    break;
+                case "Number":
+                    sortedRows = rows.sort((a, b) => {
+                        let numberA = parseInt(a.cells[0].textContent.substr(8));
+                        let numberB = parseInt(b.cells[0].textContent.substr(8));
+                        if (numberA === numberB) {
+                            let departmentOrder = { 'IT': 1, 'CMPN': 2, 'EXCS': 3 };
+                            let departmentA = a.cells[0].textContent.substr(4, 1);
+                            let departmentB = b.cells[0].textContent.substr(4, 1);
+                            return departmentOrder[departmentA] - departmentOrder[departmentB];
+                        } else {
+                            return numberA - numberB;
+                        }
+                    });
+                    break;
+                case "Alphabetical":
+                    sortedRows = rows.sort((a, b) => {
+                        let nameA = a.cells[1].textContent.toLowerCase();
+                        let nameB = b.cells[1].textContent.toLowerCase();
+                        return nameA.localeCompare(nameB);
+                    });
+                    break;
+                default:
+                    // No sorting
+                    return;
+            }
+
+            // Reorder rows in the table
+            for (let i = 0; i < sortedRows.length; i++) {
+                table.tBodies[0].appendChild(sortedRows[i]);
+            }
+        }
+
+function addColumn() {
+    let table = document.getElementById("dataTable");
+    let headerRow = table.rows[0];
+    let newColumnIndex = headerRow.cells.length;
+    let newColumnName = prompt("Enter column name:");
+
+    if (newColumnName) {
+        // Update header
+        let newHeaderCell = headerRow.insertCell(newColumnIndex - 1);
+        newHeaderCell.textContent = newColumnName;
+
+        // Update rows
+        let rows = table.rows;
+        for (let i = 1; i < rows.length; i++) {
+            let cell = rows[i].insertCell(newColumnIndex - 1);
+            cell.innerHTML = '<td><button class="button" onclick="toggleButton(this)">Absent</button></td>';
+        }
+
+        // Send the new column name to the server
+       $.ajax({
+    url: 'add_column.php',
+    type: 'POST',
+    data: { columnName: 'NewColumn' }, // Specify the name of the new column
+    success: function(response) {
+        console.log('Column added successfully!');
+        // Call save_data.php to save data to the new column
+        // Make sure to pass the data and columnName to save_data.php
+    },
+    error: function(xhr, status, error) {
+        console.error(status + ": " + error);
+    }
+});
+
+    }
+}
+
+function toggleButton(button) {
+    button.classList.toggle("green");
+    if (button.textContent === "Present") {
+        button.textContent = "Absent";
+    } else if (button.textContent === "Absent") {
+        button.textContent = "Present";
+    }
+}
+
+function saveData() {
+    let table = document.getElementById("dataTable");
+    let data = [];
+
+    // Loop through each row (excluding header row) and get the cell values
+    for (let i = 1; i < table.rows.length; i++) {
+        let row = table.rows[i];
+        let rowData = {
+            rollNumber: row.cells[0].textContent,
+            studentName: row.cells[1].textContent,
+            // Add more fields as needed
+        };
+
+        // Loop through each cell in the row (excluding the first two cells)
+        for (let j = 2; j < row.cells.length; j++) {
+            let cell = row.cells[j];
+            let button = cell.querySelector('button');
+            let attendance = button && button.classList.contains('green') ? 'P' : 'A'; // Assuming 'P' for Present and 'A' for Absent
+            let columnName = table.rows[0].cells[j].textContent; // Get the column name from the header row
+            rowData[columnName] = attendance;
+        }
+
+        data.push(rowData);
+    }
+
+    // Send the data to the server using AJAX
+   // Assume data and columnName are already defined
+$.ajax({
+    url: 'save_data.php',
+    type: 'POST',
+    data: { data: JSON.stringify(data), columnName: 'NewColumn' }, // Use the same column name as added in add_column.php
+    success: function(response) {
+        console.log('Data saved successfully!');
+    },
+    error: function(xhr, status, error) {
+        console.error(status + ": " + error);
+    }
+});
+
+}
+
+
+
+        function fetchData(slot) {
+            $.ajax({
+                url: `connect.php?slot=${slot}`,
+                type: 'GET',
+                success: function(data) {
+                    $('#dataTable tbody').html(data);
+                },
+                error: function(xhr, status, error) {
+                    console.error(status + ": " + error);
+                }
+            });
+        }
+
+        $(document).ready(function() {
+            // Initialize the table with initial data
+            fetchData('slot1'); // Assuming 'slot1' is the default slot
+        });
+
+function deleteColumn() {
+    let table = document.getElementById("dataTable");
+    let headerRow = table.rows[0];
+    let columnIndex = prompt("Enter the column index to delete (1-indexed):");
+
+    if (columnIndex && !isNaN(columnIndex) && columnIndex > 0 && columnIndex <= headerRow.cells.length) {
+        let columnName = headerRow.cells[columnIndex - 1].textContent;
+
+        // Update header
+        headerRow.deleteCell(columnIndex - 1);
+
+        // Update rows
+        let rows = table.rows;
+        for (let i = 1; i < rows.length; i++) {
+            rows[i].deleteCell(columnIndex - 1);
+        }
+
+        // Send the column name to be deleted to the server
+        $.ajax({
+            url: 'delete_column.php',
+            type: 'POST',
+            data: { columnName: columnName },
+            success: function(response) {
+                alert('Column deleted successfully!');
+            },
+            error: function(xhr, status, error) {
+                console.error(status + ": " + error);
+            }
+        });
+    } else {
+        alert("Invalid column index!");
+    }
+}
+
+function generateReport() {
+    window.location.href = 'report.php';
+}
+
+
+    </script>
+</body>
+</html>

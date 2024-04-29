@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Saved Sheets</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+
+        h1 {
+            color: chocolate; /* Chocolate color for the header */
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            overflow: hidden;
+            background-color: lightblue; /* Lightblue background for the table */
+            border: 1px solid cadetblue; /* Cadetblue border for the table */
+        }
+
+        th, td {
+            border: 1px solid cadetblue; /* Cadetblue border for table cells */
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: sandybrown; /* Sandybrown header background */
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        tr:hover {
+            background-color: #e9ecef; /* Lighter color on hover */
+        }
+
+        /* Styling for links */
+        a {
+            color: cadetblue; /* Cadetblue color for links */
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* Container background color */
+        .container {
+            background-color: #fff; /* White background for the container */
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Saved Sheets</h1>
+        <table id="dataTable">
+            <thead>
+                <tr>
+                    <th>Slots</th>
+                    <th>Last Updated</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        fetch('Sconnect.php')
+            .then(response => response.json())
+            .then(data => {
+                let tableBody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
+                data.forEach(row => {
+                    let newRow = tableBody.insertRow();
+                    newRow.insertCell().textContent = row.Slots;
+                    newRow.insertCell().textContent = row.LastUpdated;
+                });
+            });
+    </script>
+</body>
+</html>
